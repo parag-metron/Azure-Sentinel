@@ -87,7 +87,10 @@
     "playbook-1-connection-2": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', parameters('workspace-location'), '/managedApis/azuresentinel')]",
     "_playbook-1-connection-2": "[variables('playbook-1-connection-2')]",
     "workbook-source": "[concat(resourceGroup().id, '/providers/Microsoft.OperationalInsights/workspaces/',parameters('workspace'))]",
-    "_workbook-source": "[variables('workbook-source')]"
+    "_workbook-source": "[variables('workbook-source')]",
+    "EventOriginalUid": "EventOriginalUid",
+	  "_EventOriginalUid": "[variables('EventOriginalUid')]"   
+  
   },
   "resources": [
     {
@@ -234,7 +237,7 @@
           "impact": "impact",
           "description": "description",
           "severity": "EventOriginalSeverity",
-          "triage_id": "EventOriginalUid"
+          "triage_id": "[variables('_EventOriginalUid')]"
         },
         "alertDetailsOverride": {
           "alertDescriptionFormat": "{{description}}\n\n{{impact}}\n\n{{mitigation}}",
@@ -282,7 +285,7 @@
           "impact": "impact",
           "description": "description",
           "severity": "EventOriginalSeverity",
-          "triage_id": "EventOriginalUid"
+          "triage_id": "[variables('_EventOriginalUid')]"
         },
         "alertDetailsOverride": {
           "alertDescriptionFormat": "{{description}}\n\n{{impact}}\n\n{{mitigation}}",
