@@ -3,7 +3,7 @@
   "contentVersion": "1.0.0.0",
   "metadata": {
     "author": "Digital Shadows - support@digitalshadows.com",
-    "comments": "Solution template for Digital Shadows"
+    "comments": "Solution template for Digital Shadows SearchLight"
   },
   "parameters": {
     "location": {
@@ -28,9 +28,28 @@
         "description": "Workspace name for Log Analytics where Microsoft Sentinel is setup"
       }
     },
-    "connector1-name": {
+    "formattedTimeNow": {
       "type": "string",
-      "defaultValue": "b00565e8-2c44-47ef-9487-9f8e8b7394fc"
+      "defaultValue": "[utcNow('g')]",
+      "metadata": {
+        "description": "Appended to workbook displayNames to make them unique"
+      }
+    },
+    "workbook1-id": {
+      "type": "string",
+      "defaultValue": "[newGuid()]",
+      "minLength": 1,
+      "metadata": {
+        "description": "Unique id for the workbook"
+      }
+    },
+    "workbook1-name": {
+      "type": "string",
+      "defaultValue": "Digital Shadows SearchLight",
+      "minLength": 1,
+      "metadata": {
+        "description": "Name for the workbook"
+      }
     },
     "analytic1-id": {
       "type": "string",
@@ -56,164 +75,53 @@
         "description": "Resource name for the logic app playbook.  No spaces are allowed"
       }
     },
-    "formattedTimeNow": {
+    "connector1-name": {
       "type": "string",
-      "defaultValue": "[utcNow('g')]",
-      "metadata": {
-        "description": "Appended to workbook displayNames to make them unique"
-      }
-    },
-    "workbook1-id": {
-      "type": "string",
-      "defaultValue": "[newGuid()]",
-      "minLength": 1,
-      "metadata": {
-        "description": "Unique id for the workbook"
-      }
-    },
-    "workbook1-name": {
-      "type": "string",
-      "defaultValue": "Digital Shadows",
-      "minLength": 1,
-      "metadata": {
-        "description": "Name for the workbook"
-      }
+      "defaultValue": "bf736fae-b74b-4958-8d28-0bb21fa6c1fd"
     }
   },
   "variables": {
-    "connector1-source": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',resourceGroup().name,'/providers/Microsoft.OperationalInsights/workspaces/',parameters('workspace'),'/providers/Microsoft.SecurityInsights/dataConnectors/',parameters('connector1-name'))]",
-    "_connector1-source": "[variables('connector1-source')]",
+    "DigitalShadows_workbook": "DigitalShadows_workbook",
+    "_DigitalShadows_workbook": "[variables('DigitalShadows_workbook')]",
+    "workbook-source": "[concat(resourceGroup().id, '/providers/Microsoft.OperationalInsights/workspaces/',parameters('workspace'))]",
+    "_workbook-source": "[variables('workbook-source')]",
+    "Digital_Shadows_incident_creation_exclude_AnalyticalRules": "Digital_Shadows_incident_creation_exclude_AnalyticalRules",
+    "_Digital_Shadows_incident_creation_exclude_AnalyticalRules": "[variables('Digital_Shadows_incident_creation_exclude_AnalyticalRules')]",
+    "Digital_Shadows_incident_creation_include_AnalyticalRules": "Digital_Shadows_incident_creation_include_AnalyticalRules",
+    "_Digital_Shadows_incident_creation_include_AnalyticalRules": "[variables('Digital_Shadows_incident_creation_include_AnalyticalRules')]",
+    "playbook1-Playbooks": "playbook1-Playbooks",
+    "_playbook1-Playbooks": "[variables('playbook1-Playbooks')]",
     "playbook1-azuresentinelConnectionName": "[concat('azuresentinel-', parameters('playbook1-PlaybookName'))]",
     "playbook-1-connection-2": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', parameters('workspace-location'), '/managedApis/azuresentinel')]",
     "_playbook-1-connection-2": "[variables('playbook-1-connection-2')]",
-    "workbook-source": "[concat(resourceGroup().id, '/providers/Microsoft.OperationalInsights/workspaces/',parameters('workspace'))]",
-    "_workbook-source": "[variables('workbook-source')]",
-    "EventOriginalUid": "EventOriginalUid",
-	  "_EventOriginalUid": "[variables('EventOriginalUid')]"   
-  
+    "connector1-source": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',resourceGroup().name,'/providers/Microsoft.OperationalInsights/workspaces/',parameters('workspace'),'/providers/Microsoft.SecurityInsights/dataConnectors/',parameters('connector1-name'))]",
+    "_connector1-source": "[variables('connector1-source')]",
+    "DigitalShadowsSearchlightAzureFunctionsConnector": "DigitalShadowsSearchlightAzureFunctionsConnector",
+    "_DigitalShadowsSearchlightAzureFunctionsConnector": "[variables('DigitalShadowsSearchlightAzureFunctionsConnector')]",
+    "sourceId": "digitalshadows1634893476787.digitalshadows_searchlight_for_sentinel",
+    "_sourceId": "[variables('sourceId')]",
+	"triage_id": "EventOriginalUid",
+	"_triage_id": "[variables('triage_id')]"
   },
   "resources": [
     {
-      "id": "[variables('_connector1-source')]",
-      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/',parameters('connector1-name'))]",
-      "apiVersion": "2021-03-01-preview",
-      "type": "Microsoft.OperationalInsights/workspaces/providers/dataConnectors",
+      "type": "Microsoft.Insights/workbooks",
+      "name": "[parameters('workbook1-id')]",
       "location": "[parameters('workspace-location')]",
-      "kind": "GenericUI",
+      "kind": "shared",
+      "apiVersion": "2021-08-01",
       "properties": {
-        "connectorUiConfig": {
-          "title": "Digital Shadows SearchLight",
-          "publisher": "Digital Shadows",
-          "descriptionMarkdown": "The Digital Shadows data connector provides ingestion of the incidents and alerts from Digital Shadows SearchLight into the Microsoft Sentinel using the REST API. The connector will provide the incidents and alerts information such that it helps to examine, diagnose and analyse the potential security risks and threats.",
-          "graphQueries": [
-            {
-              "metricName": "Total data received",
-              "legend": "DigitalShadows_CL",
-              "baseQuery": "DigitalShadows_CL"
-            }
-          ],
-          "sampleQueries": [
-            {
-              "description": "All Digital Shadows incidents and alerts ordered by time most recently raised",
-              "query": "DigitalShadows_CL | order by raised_t desc"
-            }
-          ],
-          "dataTypes": [
-            {
-              "name": "DigitalShadows_CL",
-              "lastDataReceivedQuery": "DigitalShadows_CL\n            | summarize Time = max(TimeGenerated)\n            | where isnotempty(Time)"
-            }
-          ],
-          "connectivityCriterias": [
-            {
-              "type": "IsConnectedQuery",
-              "value": [
-                "DigitalShadows_CL\n            | summarize LastLogReceived = max(TimeGenerated)\n            | project IsConnected = LastLogReceived > ago(30d)"
-              ]
-            }
-          ],
-          "availability": {
-            "status": 1,
-            "isPreview": true
-          },
-          "permissions": {
-            "resourceProvider": [
-              {
-                "provider": "Microsoft.OperationalInsights/workspaces",
-                "permissionsDisplayText": "read and write permissions on the workspace are required.",
-                "providerDisplayName": "Workspace",
-                "scope": "Workspace",
-                "requiredPermissions": {
-                  "write": true,
-                  "read": true,
-                  "delete": true
-                }
-              },
-              {
-                "provider": "Microsoft.OperationalInsights/workspaces/sharedKeys",
-                "permissionsDisplayText": "read permissions to shared keys for the workspace are required. [See the documentation to learn more about workspace keys](https://docs.microsoft.com/azure/azure-monitor/platform/agent-windows#obtain-workspace-id-and-key).",
-                "providerDisplayName": "Keys",
-                "scope": "Workspace",
-                "requiredPermissions": {
-                  "action": true
-                }
-              }
-            ],
-            "customs": [
-              {
-                "name": "Microsoft.Web/sites permissions",
-                "description": "Read and write permissions to Azure Functions to create a Function App is required. [See the documentation to learn more about Azure Functions](https://docs.microsoft.com/azure/azure-functions/)."
-              },
-              {
-                "name": "REST API Credentials/permissions",
-                "description": "Digital Shadows SearchLight **Account ID, API Key and API Secret** is required to fetch Triage Items from Digital Shadows SearchLight. See the documentation to learn more about API on the [https://portal-digitalshadows.com/learn/SearchLight-api/overview/description](https://portal-digitalshadows.com/learn/SearchLight-api/overview/description). You will need to login to the Digital Shadows SearchLight portal to see this documentation."
-              }
-            ]
-          },
-          "instructionSteps": [
-            {
-              "description": ">**NOTE:** This connector uses Azure Functions to pull triage items from the Digital Shadows SearchLight into Microsoft Sentinel. This might result in additional data ingestion costs. Check the [Azure Functions pricing page](https://azure.microsoft.com/pricing/details/functions/) for details."
-            },
-            {
-              "description": ">**(Optional Step)** Securely store workspace and API authorization key(s) or token(s) in Azure Key Vault. Azure Key Vault provides a secure mechanism to store and retrieve key values. [Follow these instructions](https://docs.microsoft.com/azure/app-service/app-service-key-vault-references) to use Azure Key Vault with an Azure Function App."
-            },
-            {
-              "description": "**STEP 1 - Configuration steps for the 'Digital Shadows SearchLight' API**\n\nTo use the application you will need to request API Key and API Secret from Digital Shadows Support. Email [support@digitalshadows.com](support@digitalshadows.com) stating that you would like to utilize the Azure Sentinel Data Connector and your SearchLight account details to have a new API Key created and assigned to you. These credentials will be used to pull the triage items from Digital Shadows SearchLight portal into Microsoft Sentinel. "
-            },
-            {
-              "description": "**STEP 2 - Deploy the Digital Shadows SearchLight Data connector.**\n\n>**IMPORTANT:** Before deploying the Digital Shadows SearchLight data connector, have the Workspace ID  and Workspace Primary Key (can be copied from the following), as well as the Digital Shadows SearchLight API credentials readily available.",
-              "instructions": [
-                {
-                  "parameters": {
-                    "fillWith": [
-                      "WorkspaceId"
-                    ],
-                    "label": "Workspace ID"
-                  },
-                  "type": "CopyableLabel"
-                },
-                {
-                  "parameters": {
-                    "fillWith": [
-                      "PrimaryKey"
-                    ],
-                    "label": "Primary Key"
-                  },
-                  "type": "CopyableLabel"
-                }
-              ]
-            },
-            {
-              "description": "**Deploy Data Connector using the Azure Resource Manager (ARM) Template**\n\nWe use the ARM template for automated deployment of the Digital Shadows SearchLight data connector.\n\n1. Click the **Deploy to Azure** button below. \n\n\t[![Deploy To Azure](https://aka.ms/deploytoazurebutton)](https://aka.ms/sentinel-Digitalshadows-azuredeploy)\n2. Select the preferred **Subscription**, **Resource Group** and **Location**. \n3. Enter the following function parameters: \n\t- **High Variability Classifications** - The classification which generates high volume of alerts in a short period of time should be handled in parallel function. This makes sure the other types are not waiting due to High Variability Classifications alert. Classification **exposed-credential-alert** and **marked-document-alert** are provided as default values.\n\t- **Workspace ID** - Workspace ID where the data connector will be deployed.\n\t- **Workspace Key** - Workspace Key where the data connector will be deployed.\n\t- **Digital Shadows Account ID** - Account ID provided by Digital Shadows.\n\t- **Digital Shadows Key** - API Key Provided by Digital Shadows.\n\t- **Digital Shadows Secret** - API Secret Provided by Digital Shadows.\n\t- **Digital Shadows URL** - API URL to be used for making calls to Digital Shadows REST APIs.\n\t- **Historical Days** - Number of days since when you want to poll the data from, when polling for the first time. \n>Note: If using Azure Key Vault secrets for any of the values above, use the`@Microsoft.KeyVault(SecretUri={Security Identifier})`schema in place of the string values. Refer to [Key Vault references documentation](https://docs.microsoft.com/azure/app-service/app-service-key-vault-references) for further details. \n4. Mark the checkbox labeled **I agree to the terms and conditions stated above**. \n5. Click **Purchase** to deploy."
-            }
-          ]
-        }
+        "displayName": "[concat(parameters('workbook1-name'), ' - ', parameters('formattedTimeNow'))]",
+        "serializedData": "{\"version\":\"Notebook/1.0\",\"items\":[{\"type\":1,\"content\":{\"json\":\"## Digital Shadows\\n---\\n\\nWelcome to your Digital Shadows workbook. Here you can visualize certain aspects of data.\\n\\nYou can get a list of incidents from past n number of days, bar chart depicting the number of incidents over certain period of time and breakdown of incidents by type as seen in Digital Shadows portal.\\n\"},\"name\":\"text - 2\"},{\"type\":9,\"content\":{\"version\":\"KqlParameterItem/1.0\",\"parameters\":[{\"id\":\"bb5c1509-5af4-4ff0-a4d4-55b7dd7a3f84\",\"version\":\"KqlParameterItem/1.0\",\"name\":\"TimeParameter\",\"label\":\"Time Parameter\",\"type\":4,\"description\":\"Get all the incidents data from past\",\"typeSettings\":{\"selectableValues\":[{\"durationMs\":300000},{\"durationMs\":900000},{\"durationMs\":1800000},{\"durationMs\":3600000},{\"durationMs\":14400000},{\"durationMs\":43200000},{\"durationMs\":86400000},{\"durationMs\":172800000},{\"durationMs\":259200000},{\"durationMs\":604800000},{\"durationMs\":1209600000},{\"durationMs\":2419200000},{\"durationMs\":2592000000},{\"durationMs\":5184000000},{\"durationMs\":7776000000}],\"allowCustom\":true},\"timeContext\":{\"durationMs\":86400000},\"value\":{\"durationMs\":172800000}}],\"style\":\"pills\",\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\"},\"name\":\"parameters - 3\"},{\"type\":1,\"content\":{\"json\":\"\\n---\\n## Past incidents according to selected time \\n---\"},\"name\":\"text - 5\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"DigitalShadows_CL\\n| summarize arg_max(TimeGenerated, *) by id_d, id_g\",\"size\":0,\"title\":\"Incidents\",\"timeContext\":{\"durationMs\":172800000},\"timeContextFromParameter\":\"TimeParameter\",\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\"},\"name\":\"Historical data\",\"styleSettings\":{\"margin\":\"2 px\",\"padding\":\"5 px\",\"showBorder\":true}},{\"type\":1,\"content\":{\"json\":\"\\n---\\n## Incidents over time \\n---\"},\"name\":\"text - 6\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"DigitalShadows_CL\\n| summarize arg_max(TimeGenerated, *) by id_d, id_g\\n| summarize incidents=count() by bin(TimeGenerated, 1h)\",\"size\":0,\"title\":\"Bar charts \",\"timeContext\":{\"durationMs\":172800000},\"timeContextFromParameter\":\"TimeParameter\",\"showRefreshButton\":true,\"showExportToExcel\":true,\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"unstackedbar\",\"graphSettings\":{\"type\":0,\"topContent\":{\"columnMatch\":\"InALogs_CL\",\"formatter\":1},\"centerContent\":{\"columnMatch\":\"Count\",\"formatter\":1,\"numberFormat\":{\"unit\":17,\"options\":{\"maximumSignificantDigits\":3,\"maximumFractionDigits\":2}}}},\"chartSettings\":{\"xAxis\":\"TimeGenerated\",\"showLegend\":true,\"seriesLabelSettings\":[{\"seriesName\":\"InALogs_CL\",\"label\":\"Incidents and alerts\"},{\"seriesName\":\"incidents\",\"color\":\"blue\"}],\"ySettings\":{\"min\":0}},\"mapSettings\":{\"locInfo\":\"LatLong\",\"sizeSettings\":\"Count\",\"sizeAggregation\":\"Sum\",\"legendMetric\":\"Count\",\"legendAggregation\":\"Sum\",\"itemColorSettings\":{\"type\":\"heatmap\",\"colorAggregation\":\"Sum\",\"nodeColorField\":\"Count\",\"heatmapPalette\":\"greenRed\"}}},\"name\":\"barcharts\"},{\"type\":12,\"content\":{\"version\":\"NotebookGroup/1.0\",\"groupType\":\"editable\",\"items\":[{\"type\":1,\"content\":{\"json\":\"\\n---\\n## Breakdown over time\\n---\\nBy risk score\"},\"name\":\"text - 1\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"datatable (Count: long, status: string) [0, \\\"Very High\\\", 0, \\\"High\\\", 0, \\\"Medium\\\", 0, \\\"Low\\\", 0, \\\"Very Low\\\", 0, \\\"None\\\"]\\n| union\\n    (\\n    DigitalShadows_CL\\n    | summarize arg_max(TimeGenerated, *) by id_d, id_g\\n    | extend status = case(    \\n        risk_level_s == \\\"very-high\\\" or risk_assessment_risk_level_s\\n == \\\"very-high\\\", \\\"Very High\\\",\\n        risk_level_s == \\\"high\\\" or risk_assessment_risk_level_s\\n == \\\"high\\\", \\\"High\\\",\\n        risk_level_s == \\\"medium\\\" or risk_assessment_risk_level_s\\n == \\\"medium\\\", \\\"Medium\\\",\\n        risk_level_s == \\\"low\\\" or risk_assessment_risk_level_s\\n == \\\"low\\\", \\\"Low\\\",\\n        risk_level_s == \\\"very-low\\\" or risk_assessment_risk_level_s\\n == \\\"very-low\\\", \\\"Very Low\\\",\\n        risk_level_s == \\\"none\\\" or risk_assessment_risk_level_s\\n == \\\"none\\\", \\\"None\\\",       \\n        \\\"True\\\"\\n        )\\n    | where status != \\\"True\\\"\\n    | summarize Count = count() by status\\n    )\\n| summarize Count=sum(Count) by status\",\"size\":3,\"timeContext\":{\"durationMs\":172800000},\"timeContextFromParameter\":\"TimeParameter\",\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"tiles\",\"tileSettings\":{\"titleContent\":{\"columnMatch\":\"status\",\"formatter\":5,\"formatOptions\":{\"palette\":\"blue\",\"compositeBarSettings\":{\"labelText\":\"\"}}},\"leftContent\":{\"columnMatch\":\"Count\",\"formatter\":12,\"formatOptions\":{\"min\":0,\"palette\":\"greenRed\"}},\"showBorder\":true}},\"name\":\"query - 0\"},{\"type\":1,\"content\":{\"json\":\"\\n---\\nBy state\"},\"name\":\"text - 4\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"datatable (Count: long, status: string) [0, \\\"Unread\\\", 0, \\\"Open\\\", 0, \\\"Rejected\\\", 0, \\\"Resolved\\\", 0, \\\"Closed\\\"]\\n| union\\n    (\\n    DigitalShadows_CL\\n    | summarize arg_max(TimeGenerated, *) by id_d, id_g\\n    | extend status = case(status_s == \\\"unread\\\", \\\"Unread\\\",\\n status_s == \\\"open\\\", \\\"Open\\\",       \\n status_s == \\\"rejected\\\", \\\"Rejected\\\",\\n status_s == \\\"resolved\\\", \\\"Resolved\\\",\\n status_s == \\\"closed\\\", \\\"Closed\\\",\\n        \\\"True\\\"\\n        )\\n    | where status != \\\"True\\\"\\n    | summarize Count = count() by status\\n    )\\n| summarize Count=sum(Count) by status\",\"size\":3,\"timeContext\":{\"durationMs\":172800000},\"timeContextFromParameter\":\"TimeParameter\",\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"tiles\",\"tileSettings\":{\"showBorder\":false,\"titleContent\":{\"columnMatch\":\"status\",\"formatter\":1},\"leftContent\":{\"columnMatch\":\"Count\",\"formatter\":12,\"formatOptions\":{\"palette\":\"auto\"},\"numberFormat\":{\"unit\":17,\"options\":{\"maximumSignificantDigits\":3,\"maximumFractionDigits\":2}}}}},\"name\":\"query - 5\"},{\"type\":1,\"content\":{\"json\":\"\\n---\\nBy most frequent risk\"},\"name\":\"text - 3\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"datatable (Count: long, status: string) [0, \\\"Cyber Threat\\\", 0, \\\"Credential Compromise\\\", 0, \\\"Impersonating Employee Profile\\\", 0, \\\"Impersonating Company Profile\\\", 0, \\\"Customer Details\\\", 0, \\\"Technical Leakage\\\", 0, \\\"Intellectual Property\\\", 0, \\\"Negative Publicity\\\", 0, \\\"Exposed Port\\\", 0, \\\"Exposed Credentials Alert\\\", 0, \\\"Protectively Marked Document\\\", 0, \\\"Phishing Attempt\\\", 0, \\\"Spoof Profile\\\", 0, \\\"Customer Details\\\", 0, \\\"Brand Misuse\\\", 0, \\\"Mobile Application\\\", 0, \\\"Domain Certificate Issue\\\", 0, \\\"CVE\\\", 0, \\\"Unmarked Document\\\", 0, \\\"Social media-technical information\\\", 0, \\\"Social media-personal information\\\", 0, \\\"Physical security-personal threat\\\", 0, \\\"Physical security-employee threat\\\", 0, \\\"Physical security-company threat\\\", 0, \\\"Defamation\\\", 0, \\\"Legacy marked document\\\", 0, \\\"Internally marked document\\\", 0, \\\"Exposed access key\\\", 0, \\\"Exposed marked document\\\", 0, \\\"Exposed technical document\\\", 0, \\\"Impersonating domain\\\", 0, \\\"Impersonating subdomain\\\", 0, \\\"Unauthorized code commit\\\"]\\n| union\\n    (\\n    DigitalShadows_CL\\n    | summarize arg_max(TimeGenerated, *) by id_d, id_g\\n    | extend status = case(    \\n        classification_s== \\\"cyber-threat-incident\\\", \\\"Cyber Threat\\\",\\n        classification_s==\\\"credential-compromise-incident\\\", \\\"Credential Compromise\\\",\\n        classification_s==\\\"employee-threat-incident\\\", \\\"Impersonating Employee Profile\\\",\\n        classification_s==\\\"impersonating-domain-alert\\\", \\\"Impersonating Company Profile\\\",\\n        classification_s==\\\"personal-compliance-incident\\\", \\\"Customer Details\\\",\\n        classification_s==\\\"technical-compliance-incident\\\", \\\"Technical Leakage\\\",\\n        classification_s==\\\"intellectual-property-incident\\\", \\\"Intellectual Property\\\",\\n        classification_s==\\\"negative-publicity-incident\\\", \\\"Negative Publicity\\\",\\n        classification_s==\\\"exposed-port-incident\\\", \\\"Exposed Port\\\",\\n        classification_s==\\\"exposed-credential-alert\\\", \\\"Exposed Credentials Alert\\\", \\n        classification_s==\\\"protectively-marked-document-incident\\\", \\\"Protectively Marked Document\\\",\\n        classification_s==\\\"phishing-attempt-incident\\\", \\\"Phishing Attempt\\\",\\n        classification_s==\\\"spoof-profile-incident\\\", \\\"Spoof Profile\\\",\\n        classification_s==\\\"customer-details-incident\\\", \\\"Customer Details\\\",\\n        classification_s==\\\"brand-misuse-incident\\\", \\\"Brand Misuse\\\",\\n        classification_s==\\\"mobile-application-incident\\\", \\\"Mobile Application\\\",\\n        classification_s==\\\"domain-certificate-issue-incident\\\", \\\"Domain Certificate Issue\\\",\\n        classification_s==\\\"cve-incident\\\", \\\"CVE\\\", \\n        classification_s==\\\"unmarked-document-incident\\\", \\\"Unmarked Document\\\",\\n        classification_s==\\\"technical-compliance-incident\\\", \\\"Social media-technical information\\\",\\n        classification_s==\\\"personal-compliance-incident\\\", \\\"Social media-personal information\\\",\\n        classification_s==\\\"personal-threat-incident\\\", \\\"Physical security-personal threat\\\",\\n        classification_s==\\\"employee-threat-incident\\\", \\\"Physical security-employee threat\\\",\\n        classification_s==\\\"company-threat-incident\\\", \\\"Physical security-company threat\\\",\\n        classification_s==\\\"defamation-incident\\\", \\\"Defamation\\\",\\n        classification_s==\\\"legacy-marked-document-incident\\\", \\\"Legacy marked document\\\",\\n        classification_s==\\\"internally-marked-document-incident\\\", \\\"Internally marked document\\\",\\n        classification_s==\\\"exposed-access-key-alert\\\", \\\"Exposed access key\\\",\\n        classification_s==\\\"marked-document-alert\\\", \\\"Exposed marked document\\\",\\n        classification_s==\\\"technical-leakage-incident\\\", \\\"Exposed technical document\\\",\\n        classification_s==\\\"impersonating-domain-alert\\\", \\\"Impersonating domain\\\",\\n        classification_s==\\\"impersonating-subdomain-alert\\\", \\\"Impersonating subdomain\\\",\\n        classification_s==\\\"unauthorized-code-commit-alert\\\", \\\"Unauthorized code commit\\\",\\n        \\\"True\\\"\\n        )\\n    | where status != \\\"True\\\"\\n    | summarize Count = count() by status\\n    )\\n| summarize Count=sum(Count) by status\\n| sort by Count\\n\",\"size\":3,\"timeContext\":{\"durationMs\":172800000},\"timeContextFromParameter\":\"TimeParameter\",\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"tiles\",\"tileSettings\":{\"titleContent\":{\"columnMatch\":\"status\",\"formatter\":1},\"leftContent\":{\"columnMatch\":\"Count\",\"formatter\":12,\"formatOptions\":{\"palette\":\"auto\"},\"numberFormat\":{\"unit\":17,\"options\":{\"style\":\"decimal\",\"maximumFractionDigits\":2,\"maximumSignificantDigits\":3}}},\"showBorder\":false}},\"name\":\"query - 2\"}]},\"name\":\"group - 4\"}],\"fromTemplateId\":\"DigitalShadows-Workbook\",\"$schema\":\"https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json\"}\r\n",
+        "version": "1.0",
+        "sourceId": "[variables('_workbook-source')]",
+        "category": "sentinel"
       }
     },
     {
       "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
       "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/',parameters('analytic1-id'))]",
-      "apiVersion": "2021-10-01",
+      "apiVersion": "2021-03-01-preview",
       "kind": "Scheduled",
       "location": "[parameters('workspace-location')]",
       "properties": {
@@ -232,26 +140,26 @@
           "aggregationKind": "AlertPerResult"
         },
         "customDetails": {
-          "status": "status",
-          "mitigation": "mitigation",
           "impact": "impact",
-          "description": "description",
+          "mitigation": "mitigation",
+          "triage_id": "[variables('_triage_id')]",
           "severity": "EventOriginalSeverity",
-          "triage_id": "[variables('_EventOriginalUid')]"
+          "description": "description",
+          "status": "status"
         },
         "alertDetailsOverride": {
-          "alertDescriptionFormat": "{{description}}\n\n{{impact}}\n\n{{mitigation}}",
           "alertSeverityColumnName": "EventSeverity",
-          "alertDisplayNameFormat": "Digital Shadows - {{EventMessage}}"
+          "alertDisplayNameFormat": "Digital Shadows - {{EventMessage}}",
+          "alertDescriptionFormat": "{{description}}\n\n{{impact}}\n\n{{mitigation}}"
         },
         "incidentConfiguration": {
           "groupingConfiguration": {
-            "lookbackDuration": "P6D",
+            "lookbackDuration": "7d",
+            "reopenClosedIncident": true,
             "enabled": true,
             "groupByCustomDetails": [
               "triage_id"
             ],
-            "reopenClosedIncident": true,
             "matchingMethod": "Selected"
           },
           "createIncident": true
@@ -261,7 +169,7 @@
     {
       "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
       "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/',parameters('analytic2-id'))]",
-      "apiVersion": "2021-10-01",
+      "apiVersion": "2021-03-01-preview",
       "kind": "Scheduled",
       "location": "[parameters('workspace-location')]",
       "properties": {
@@ -280,26 +188,26 @@
           "aggregationKind": "AlertPerResult"
         },
         "customDetails": {
-          "status": "status",
-          "mitigation": "mitigation",
           "impact": "impact",
-          "description": "description",
+          "mitigation": "mitigation",
+          "triage_id": "[variables('_triage_id')]",
           "severity": "EventOriginalSeverity",
-          "triage_id": "[variables('_EventOriginalUid')]"
+          "description": "description",
+          "status": "status"
         },
         "alertDetailsOverride": {
-          "alertDescriptionFormat": "{{description}}\n\n{{impact}}\n\n{{mitigation}}",
           "alertSeverityColumnName": "EventSeverity",
-          "alertDisplayNameFormat": "Digital Shadows - {{EventMessage}}"
+          "alertDisplayNameFormat": "Digital Shadows - {{EventMessage}}",
+          "alertDescriptionFormat": "{{description}}\n\n{{impact}}\n\n{{mitigation}}"
         },
         "incidentConfiguration": {
           "groupingConfiguration": {
-            "lookbackDuration": "P6D",
+            "lookbackDuration": "7d",
+            "reopenClosedIncident": true,
             "enabled": true,
             "groupByCustomDetails": [
               "triage_id"
             ],
-            "reopenClosedIncident": true,
             "matchingMethod": "Selected"
           },
           "createIncident": true
@@ -656,18 +564,185 @@
       }
     },
     {
-      "type": "Microsoft.Insights/workbooks",
-      "name": "[parameters('workbook1-id')]",
+      "id": "[variables('_connector1-source')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/',parameters('connector1-name'))]",
+      "apiVersion": "2021-03-01-preview",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/dataConnectors",
       "location": "[parameters('workspace-location')]",
-      "kind": "shared",
-      "apiVersion": "2021-08-01",
+      "kind": "GenericUI",
       "properties": {
-        "displayName": "[concat(parameters('workbook1-name'), ' - ', parameters('formattedTimeNow'))]",
-        "serializedData": "{\"version\":\"Notebook/1.0\",\"items\":[{\"type\":1,\"content\":{\"json\":\"## Digital Shadows\\n---\\n\\nWelcome to your Digital Shadows workbook. Here you can visualize certain aspects of data.\\n\\nYou can get a list of incidents from past n number of days, bar chart depicting the number of incidents over certain period of time and breakdown of incidents by type as seen in Digital Shadows portal.\\n\"},\"name\":\"text - 2\"},{\"type\":9,\"content\":{\"version\":\"KqlParameterItem/1.0\",\"parameters\":[{\"id\":\"bb5c1509-5af4-4ff0-a4d4-55b7dd7a3f84\",\"version\":\"KqlParameterItem/1.0\",\"name\":\"TimeParameter\",\"label\":\"Time Parameter\",\"type\":4,\"description\":\"Get all the incidents data from past\",\"typeSettings\":{\"selectableValues\":[{\"durationMs\":300000},{\"durationMs\":900000},{\"durationMs\":1800000},{\"durationMs\":3600000},{\"durationMs\":14400000},{\"durationMs\":43200000},{\"durationMs\":86400000},{\"durationMs\":172800000},{\"durationMs\":259200000},{\"durationMs\":604800000},{\"durationMs\":1209600000},{\"durationMs\":2419200000},{\"durationMs\":2592000000},{\"durationMs\":5184000000},{\"durationMs\":7776000000}],\"allowCustom\":true},\"timeContext\":{\"durationMs\":86400000},\"value\":{\"durationMs\":172800000}}],\"style\":\"pills\",\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\"},\"name\":\"parameters - 3\"},{\"type\":1,\"content\":{\"json\":\"\\n---\\n## Past incidents according to selected time \\n---\"},\"name\":\"text - 5\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"DigitalShadows_CL\\n| summarize arg_max(TimeGenerated, *) by id_d, id_g\",\"size\":0,\"title\":\"Incidents\",\"timeContext\":{\"durationMs\":172800000},\"timeContextFromParameter\":\"TimeParameter\",\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\"},\"name\":\"Historical data\",\"styleSettings\":{\"margin\":\"2 px\",\"padding\":\"5 px\",\"showBorder\":true}},{\"type\":1,\"content\":{\"json\":\"\\n---\\n## Incidents over time \\n---\"},\"name\":\"text - 6\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"DigitalShadows_CL\\n| summarize arg_max(TimeGenerated, *) by id_d, id_g\\n| summarize incidents=count() by bin(TimeGenerated, 1h)\",\"size\":0,\"title\":\"Bar charts \",\"timeContext\":{\"durationMs\":172800000},\"timeContextFromParameter\":\"TimeParameter\",\"showRefreshButton\":true,\"showExportToExcel\":true,\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"unstackedbar\",\"graphSettings\":{\"type\":0,\"topContent\":{\"columnMatch\":\"InALogs_CL\",\"formatter\":1},\"centerContent\":{\"columnMatch\":\"Count\",\"formatter\":1,\"numberFormat\":{\"unit\":17,\"options\":{\"maximumSignificantDigits\":3,\"maximumFractionDigits\":2}}}},\"chartSettings\":{\"xAxis\":\"TimeGenerated\",\"showLegend\":true,\"seriesLabelSettings\":[{\"seriesName\":\"InALogs_CL\",\"label\":\"Incidents and alerts\"},{\"seriesName\":\"incidents\",\"color\":\"blue\"}],\"ySettings\":{\"min\":0}},\"mapSettings\":{\"locInfo\":\"LatLong\",\"sizeSettings\":\"Count\",\"sizeAggregation\":\"Sum\",\"legendMetric\":\"Count\",\"legendAggregation\":\"Sum\",\"itemColorSettings\":{\"type\":\"heatmap\",\"colorAggregation\":\"Sum\",\"nodeColorField\":\"Count\",\"heatmapPalette\":\"greenRed\"}}},\"name\":\"barcharts\"},{\"type\":12,\"content\":{\"version\":\"NotebookGroup/1.0\",\"groupType\":\"editable\",\"items\":[{\"type\":1,\"content\":{\"json\":\"\\n---\\n## Breakdown over time\\n---\\nBy risk score\"},\"name\":\"text - 1\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"datatable (Count: long, status: string) [0, \\\"Very High\\\", 0, \\\"High\\\", 0, \\\"Medium\\\", 0, \\\"Low\\\", 0, \\\"Very Low\\\", 0, \\\"None\\\"]\\n| union\\n    (\\n    DigitalShadows_CL\\n    | summarize arg_max(TimeGenerated, *) by id_d, id_g\\n    | extend status = case(    \\n        risk_level_s == \\\"very-high\\\" or risk_assessment_risk_level_s\\n == \\\"very-high\\\", \\\"Very High\\\",\\n        risk_level_s == \\\"high\\\" or risk_assessment_risk_level_s\\n == \\\"high\\\", \\\"High\\\",\\n        risk_level_s == \\\"medium\\\" or risk_assessment_risk_level_s\\n == \\\"medium\\\", \\\"Medium\\\",\\n        risk_level_s == \\\"low\\\" or risk_assessment_risk_level_s\\n == \\\"low\\\", \\\"Low\\\",\\n        risk_level_s == \\\"very-low\\\" or risk_assessment_risk_level_s\\n == \\\"very-low\\\", \\\"Very Low\\\",\\n        risk_level_s == \\\"none\\\" or risk_assessment_risk_level_s\\n == \\\"none\\\", \\\"None\\\",       \\n        \\\"True\\\"\\n        )\\n    | where status != \\\"True\\\"\\n    | summarize Count = count() by status\\n    )\\n| summarize Count=sum(Count) by status\",\"size\":3,\"timeContext\":{\"durationMs\":172800000},\"timeContextFromParameter\":\"TimeParameter\",\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"tiles\",\"tileSettings\":{\"titleContent\":{\"columnMatch\":\"status\",\"formatter\":5,\"formatOptions\":{\"palette\":\"blue\",\"compositeBarSettings\":{\"labelText\":\"\"}}},\"leftContent\":{\"columnMatch\":\"Count\",\"formatter\":12,\"formatOptions\":{\"min\":0,\"palette\":\"greenRed\"}},\"showBorder\":true}},\"name\":\"query - 0\"},{\"type\":1,\"content\":{\"json\":\"\\n---\\nBy state\"},\"name\":\"text - 4\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"datatable (Count: long, status: string) [0, \\\"Unread\\\", 0, \\\"Open\\\", 0, \\\"Rejected\\\", 0, \\\"Resolved\\\", 0, \\\"Closed\\\"]\\n| union\\n    (\\n    DigitalShadows_CL\\n    | summarize arg_max(TimeGenerated, *) by id_d, id_g\\n    | extend status = case(status_s == \\\"unread\\\", \\\"Unread\\\",\\n status_s == \\\"open\\\", \\\"Open\\\",       \\n status_s == \\\"rejected\\\", \\\"Rejected\\\",\\n status_s == \\\"resolved\\\", \\\"Resolved\\\",\\n status_s == \\\"closed\\\", \\\"Closed\\\",\\n        \\\"True\\\"\\n        )\\n    | where status != \\\"True\\\"\\n    | summarize Count = count() by status\\n    )\\n| summarize Count=sum(Count) by status\",\"size\":3,\"timeContext\":{\"durationMs\":172800000},\"timeContextFromParameter\":\"TimeParameter\",\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"tiles\",\"tileSettings\":{\"showBorder\":false,\"titleContent\":{\"columnMatch\":\"status\",\"formatter\":1},\"leftContent\":{\"columnMatch\":\"Count\",\"formatter\":12,\"formatOptions\":{\"palette\":\"auto\"},\"numberFormat\":{\"unit\":17,\"options\":{\"maximumSignificantDigits\":3,\"maximumFractionDigits\":2}}}}},\"name\":\"query - 5\"},{\"type\":1,\"content\":{\"json\":\"\\n---\\nBy most frequent risk\"},\"name\":\"text - 3\"},{\"type\":3,\"content\":{\"version\":\"KqlItem/1.0\",\"query\":\"datatable (Count: long, status: string) [0, \\\"Cyber Threat\\\", 0, \\\"Credential Compromise\\\", 0, \\\"Impersonating Employee Profile\\\", 0, \\\"Impersonating Company Profile\\\", 0, \\\"Customer Details\\\", 0, \\\"Technical Leakage\\\", 0, \\\"Intellectual Property\\\", 0, \\\"Negative Publicity\\\", 0, \\\"Exposed Port\\\", 0, \\\"Exposed Credentials Alert\\\", 0, \\\"Protectively Marked Document\\\", 0, \\\"Phishing Attempt\\\", 0, \\\"Spoof Profile\\\", 0, \\\"Customer Details\\\", 0, \\\"Brand Misuse\\\", 0, \\\"Mobile Application\\\", 0, \\\"Domain Certificate Issue\\\", 0, \\\"CVE\\\", 0, \\\"Unmarked Document\\\", 0, \\\"Social media-technical information\\\", 0, \\\"Social media-personal information\\\", 0, \\\"Physical security-personal threat\\\", 0, \\\"Physical security-employee threat\\\", 0, \\\"Physical security-company threat\\\", 0, \\\"Defamation\\\", 0, \\\"Legacy marked document\\\", 0, \\\"Internally marked document\\\", 0, \\\"Exposed access key\\\", 0, \\\"Exposed marked document\\\", 0, \\\"Exposed technical document\\\", 0, \\\"Impersonating domain\\\", 0, \\\"Impersonating subdomain\\\", 0, \\\"Unauthorized code commit\\\"]\\n| union\\n    (\\n    DigitalShadows_CL\\n    | summarize arg_max(TimeGenerated, *) by id_d, id_g\\n    | extend status = case(    \\n        classification_s== \\\"cyber-threat-incident\\\", \\\"Cyber Threat\\\",\\n        classification_s==\\\"credential-compromise-incident\\\", \\\"Credential Compromise\\\",\\n        classification_s==\\\"employee-threat-incident\\\", \\\"Impersonating Employee Profile\\\",\\n        classification_s==\\\"impersonating-domain-alert\\\", \\\"Impersonating Company Profile\\\",\\n        classification_s==\\\"personal-compliance-incident\\\", \\\"Customer Details\\\",\\n        classification_s==\\\"technical-compliance-incident\\\", \\\"Technical Leakage\\\",\\n        classification_s==\\\"intellectual-property-incident\\\", \\\"Intellectual Property\\\",\\n        classification_s==\\\"negative-publicity-incident\\\", \\\"Negative Publicity\\\",\\n        classification_s==\\\"exposed-port-incident\\\", \\\"Exposed Port\\\",\\n        classification_s==\\\"exposed-credential-alert\\\", \\\"Exposed Credentials Alert\\\", \\n        classification_s==\\\"protectively-marked-document-incident\\\", \\\"Protectively Marked Document\\\",\\n        classification_s==\\\"phishing-attempt-incident\\\", \\\"Phishing Attempt\\\",\\n        classification_s==\\\"spoof-profile-incident\\\", \\\"Spoof Profile\\\",\\n        classification_s==\\\"customer-details-incident\\\", \\\"Customer Details\\\",\\n        classification_s==\\\"brand-misuse-incident\\\", \\\"Brand Misuse\\\",\\n        classification_s==\\\"mobile-application-incident\\\", \\\"Mobile Application\\\",\\n        classification_s==\\\"domain-certificate-issue-incident\\\", \\\"Domain Certificate Issue\\\",\\n        classification_s==\\\"cve-incident\\\", \\\"CVE\\\", \\n        classification_s==\\\"unmarked-document-incident\\\", \\\"Unmarked Document\\\",\\n        classification_s==\\\"technical-compliance-incident\\\", \\\"Social media-technical information\\\",\\n        classification_s==\\\"personal-compliance-incident\\\", \\\"Social media-personal information\\\",\\n        classification_s==\\\"personal-threat-incident\\\", \\\"Physical security-personal threat\\\",\\n        classification_s==\\\"employee-threat-incident\\\", \\\"Physical security-employee threat\\\",\\n        classification_s==\\\"company-threat-incident\\\", \\\"Physical security-company threat\\\",\\n        classification_s==\\\"defamation-incident\\\", \\\"Defamation\\\",\\n        classification_s==\\\"legacy-marked-document-incident\\\", \\\"Legacy marked document\\\",\\n        classification_s==\\\"internally-marked-document-incident\\\", \\\"Internally marked document\\\",\\n        classification_s==\\\"exposed-access-key-alert\\\", \\\"Exposed access key\\\",\\n        classification_s==\\\"marked-document-alert\\\", \\\"Exposed marked document\\\",\\n        classification_s==\\\"technical-leakage-incident\\\", \\\"Exposed technical document\\\",\\n        classification_s==\\\"impersonating-domain-alert\\\", \\\"Impersonating domain\\\",\\n        classification_s==\\\"impersonating-subdomain-alert\\\", \\\"Impersonating subdomain\\\",\\n        classification_s==\\\"unauthorized-code-commit-alert\\\", \\\"Unauthorized code commit\\\",\\n        \\\"True\\\"\\n        )\\n    | where status != \\\"True\\\"\\n    | summarize Count = count() by status\\n    )\\n| summarize Count=sum(Count) by status\\n| sort by Count\\n\",\"size\":3,\"timeContext\":{\"durationMs\":172800000},\"timeContextFromParameter\":\"TimeParameter\",\"queryType\":0,\"resourceType\":\"microsoft.operationalinsights/workspaces\",\"visualization\":\"tiles\",\"tileSettings\":{\"titleContent\":{\"columnMatch\":\"status\",\"formatter\":1},\"leftContent\":{\"columnMatch\":\"Count\",\"formatter\":12,\"formatOptions\":{\"palette\":\"auto\"},\"numberFormat\":{\"unit\":17,\"options\":{\"style\":\"decimal\",\"maximumFractionDigits\":2,\"maximumSignificantDigits\":3}}},\"showBorder\":false}},\"name\":\"query - 2\"}]},\"name\":\"group - 4\"}],\"fromTemplateId\":\"DigitalShadows-Workbook\",\"$schema\":\"https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json\"}\n",
-        "version": "1.0",
-        "sourceId": "[variables('_workbook-source')]",
-        "category": "sentinel"
+        "connectorUiConfig": {
+          "title": "Digital Shadows SearchLight",
+          "publisher": "Digital Shadows",
+          "descriptionMarkdown": "The Digital Shadows data connector provides ingestion of the incidents and alerts from Digital Shadows SearchLight into the Microsoft Sentinel using the REST API. The connector will provide the incidents and alerts information such that it helps to examine, diagnose and analyse the potential security risks and threats.",
+          "graphQueries": [
+            {
+              "metricName": "Total data received",
+              "legend": "DigitalShadows_CL",
+              "baseQuery": "DigitalShadows_CL"
+            }
+          ],
+          "sampleQueries": [
+            {
+              "description": "All Digital Shadows incidents and alerts ordered by time most recently raised",
+              "query": "DigitalShadows_CL | order by raised_t desc"
+            }
+          ],
+          "dataTypes": [
+            {
+              "name": "DigitalShadows_CL",
+              "lastDataReceivedQuery": "DigitalShadows_CL\n            | summarize Time = max(TimeGenerated)\n            | where isnotempty(Time)"
+            }
+          ],
+          "connectivityCriterias": [
+            {
+              "type": "IsConnectedQuery",
+              "value": [
+                "DigitalShadows_CL\n            | summarize LastLogReceived = max(TimeGenerated)\n            | project IsConnected = LastLogReceived > ago(30d)"
+              ]
+            }
+          ],
+          "availability": {
+            "status": 1,
+            "isPreview": true
+          },
+          "permissions": {
+            "resourceProvider": [
+              {
+                "provider": "Microsoft.OperationalInsights/workspaces",
+                "permissionsDisplayText": "read and write permissions on the workspace are required.",
+                "providerDisplayName": "Workspace",
+                "scope": "Workspace",
+                "requiredPermissions": {
+                  "write": true,
+                  "read": true,
+                  "delete": true
+                }
+              },
+              {
+                "provider": "Microsoft.OperationalInsights/workspaces/sharedKeys",
+                "permissionsDisplayText": "read permissions to shared keys for the workspace are required. [See the documentation to learn more about workspace keys](https://docs.microsoft.com/azure/azure-monitor/platform/agent-windows#obtain-workspace-id-and-key).",
+                "providerDisplayName": "Keys",
+                "scope": "Workspace",
+                "requiredPermissions": {
+                  "action": true
+                }
+              }
+            ],
+            "customs": [
+              {
+                "name": "Microsoft.Web/sites permissions",
+                "description": "Read and write permissions to Azure Functions to create a Function App is required. [See the documentation to learn more about Azure Functions](https://docs.microsoft.com/azure/azure-functions/)."
+              },
+              {
+                "name": "REST API Credentials/permissions",
+                "description": "**Digital Shadows account ID, secret and key** is required.  See the documentation to learn more about API on the `https://portal-digitalshadows.com/learn/searchlight-api/overview/description`."
+              }
+            ]
+          },
+          "instructionSteps": [
+            {
+              "description": ">**NOTE:** This connector uses Azure Functions to pull triage items from the Digital Shadows SearchLight into Microsoft Sentinel. This might result in additional data ingestion costs. Check the [Azure Functions pricing page](https://azure.microsoft.com/pricing/details/functions/) for details."
+            },
+            {
+              "description": ">**(Optional Step)** Securely store workspace and API authorization key(s) or token(s) in Azure Key Vault. Azure Key Vault provides a secure mechanism to store and retrieve key values. [Follow these instructions](https://docs.microsoft.com/azure/app-service/app-service-key-vault-references) to use Azure Key Vault with an Azure Function App."
+            },
+            {
+              "description": "**STEP 1 - Configuration steps for the 'Digital Shadows SearchLight' API**\n\nTo use the application you will need to request API Key and API Secret from Digital Shadows Support. Email [support@digitalshadows.com](support@digitalshadows.com) stating that you would like to utilize the Azure Sentinel Data Connector and your SearchLight account details to have a new API Key created and assigned to you. These credentials will be used to pull the triage items from Digital Shadows SearchLight portal into Microsoft Sentinel. "
+            },
+            {
+              "description": "**STEP 2 - Deploy the Digital Shadows SearchLight Data connector.**\n\n>**IMPORTANT:** Before deploying the Digital Shadows SearchLight data connector, have the Workspace ID  and Workspace Primary Key (can be copied from the following), as well as the Digital Shadows SearchLight API credentials readily available.",
+              "instructions": [
+                {
+                  "parameters": {
+                    "fillWith": [
+                      "WorkspaceId"
+                    ],
+                    "label": "Workspace ID"
+                  },
+                  "type": "CopyableLabel"
+                },
+                {
+                  "parameters": {
+                    "fillWith": [
+                      "PrimaryKey"
+                    ],
+                    "label": "Primary Key"
+                  },
+                  "type": "CopyableLabel"
+                }
+              ]
+            },
+            {
+              "description": "**Deploy Data Connector using the Azure Resource Manager (ARM) Template**\n\nWe use the ARM template for automated deployment of the Digital Shadows SearchLight data connector.\n\n1. Click the **Deploy to Azure** button below. \n\n\t[![Deploy To Azure](https://aka.ms/deploytoazurebutton)](https://aka.ms/sentinel-Digitalshadows-azuredeploy)\n2. Select the preferred **Subscription**, **Resource Group** and **Location**. \n3. Enter the following function parameters: \n\t- **High Variability Classifications** - The classification which generates high volume of alerts in a short period of time should be handled in parallel function. This makes sure the other types are not waiting due to High Variability Classifications alert. Classification **exposed-credential-alert** and **marked-document-alert** are provided as default values.\n\t- **Workspace ID** - Workspace ID where the data connector will be deployed.\n\t- **Workspace Key** - Workspace Key where the data connector will be deployed.\n\t- **Digital Shadows Account ID** - Account ID provided by Digital Shadows.\n\t- **Digital Shadows Key** - API Key Provided by Digital Shadows.\n\t- **Digital Shadows Secret** - API Secret Provided by Digital Shadows.\n\t- **Digital Shadows URL** - API URL to be used for making calls to Digital Shadows REST APIs.\n\t- **Historical Days** - Number of days since when you want to poll the data from, when polling for the first time. \n>Note: If using Azure Key Vault secrets for any of the values above, use the`@Microsoft.KeyVault(SecretUri={Security Identifier})`schema in place of the string values. Refer to [Key Vault references documentation](https://docs.microsoft.com/azure/app-service/app-service-key-vault-references) for further details. \n4. Mark the checkbox labeled **I agree to the terms and conditions stated above**. \n5. Click **Purchase** to deploy."
+            }
+          ]
+        }
       }
+    },
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/providers/metadata",
+      "apiVersion": "2021-03-01-preview",
+      "properties": {
+        "version": "1.0.0",
+        "kind": "Solution",
+        "contentId": "[variables('_sourceId')]",
+        "parentId": "[variables('_sourceId')]",
+        "source": {
+          "kind": "Solution",
+          "name": "Digital Shadows SearchLight",
+          "sourceId": "[variables('_sourceId')]"
+        },
+        "author": {
+          "name": "Digital Shadows",
+          "email": "support@digitalshadows.com"
+        },
+        "support": {
+          "name": "Digital Shadows",
+          "email": "support@digitalshadows.com",
+          "tier": "Partner",
+          "link": "https://www.digitalshadows.com/"
+        },
+        "dependencies": {
+          "operator": "AND",
+          "criteria": [
+            {
+              "kind": "Workbook",
+              "contentId": "[variables('_DigitalShadows_workbook')]",
+              "version": "1.0.0"
+            },
+            {
+              "kind": "AnalyticsRule",
+              "contentId": "[variables('_Digital_Shadows_incident_creation_exclude_AnalyticalRules')]",
+              "version": "1.0.0"
+            },
+            {
+              "kind": "AnalyticsRule",
+              "contentId": "[variables('_Digital_Shadows_incident_creation_include_AnalyticalRules')]",
+              "version": "1.0.0"
+            },
+            {
+              "kind": "Playbook",
+              "contentId": "[variables('_playbook1-Playbooks')]",
+              "version": "1.0.0"
+            },
+            {
+              "kind": "DataConnector",
+              "contentId": "[variables('_DigitalShadowsSearchlightAzureFunctionsConnector')]",
+              "version": "1.0.0"
+            }
+          ]
+        },
+        "providers": [
+          "DigitalShadows"
+        ],
+        "categories": {
+          "domains": [
+            "Security - Threat Intelligence"
+          ]
+        }
+      },
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/', variables('_sourceId'))]"
     }
   ],
   "outputs": {}
