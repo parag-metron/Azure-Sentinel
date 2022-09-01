@@ -154,7 +154,7 @@
         },
         "incidentConfiguration": {
           "groupingConfiguration": {
-            "lookbackDuration": "7d",
+            "lookbackDuration": "P7D",
             "reopenClosedIncident": true,
             "enabled": true,
             "groupByCustomDetails": [
@@ -202,7 +202,7 @@
         },
         "incidentConfiguration": {
           "groupingConfiguration": {
-            "lookbackDuration": "7d",
+            "lookbackDuration": "P7D",
             "reopenClosedIncident": true,
             "enabled": true,
             "groupByCustomDetails": [
